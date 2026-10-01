@@ -1,0 +1,6 @@
+{
+  "name": "BirrFlow — AI-Powered Personal CFO & SMS Financial Tracker",
+  "description": "BirrFlow is an AI personal CFO for freelancers, students, and employees in Ethiopia. It turns bank SMS messages into real-time cashflow analytics, predictive budgets, and an interactive AI financial assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
