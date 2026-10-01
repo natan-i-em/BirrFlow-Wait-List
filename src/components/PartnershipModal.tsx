@@ -23,6 +23,8 @@ export const PartnershipModal: React.FC<PartnershipModalProps> = ({
   const [notes, setNotes] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(''); 
 
   if (!isOpen) return null;
 
@@ -35,13 +37,32 @@ export const PartnershipModal: React.FC<PartnershipModalProps> = ({
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      setIsSubmitted(true);
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validate()) return;
 
+  setIsSubmitting(true);
+  setSubmitError('');
+  try {
+    const res = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role, name, email, phone, occupation, primaryBank, notes, lang }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+          (lang === 'en' ? 'Something went wrong. Please try again.' : 'ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።')
+      );
+    }
+    setIsSubmitted(true);
+  } catch (err: any) {
+    setSubmitError(err.message);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   const handleReset = () => {
     setIsSubmitted(false);
     setName('');
@@ -231,14 +252,22 @@ export const PartnershipModal: React.FC<PartnershipModalProps> = ({
               </div>
 
               <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <span>{lang === 'en' ? 'Submit Registration' : 'ምዝገባውን አጠናቅቅ'}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+  {submitError && (
+    <div className="text-red-400 text-[11px] mb-2 text-center">{submitError}</div>
+  )}
+  <button
+    type="submit"
+    disabled={isSubmitting}
+    className="w-full py-3 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+  >
+    <span>
+      {isSubmitting
+        ? lang === 'en' ? 'Submitting...' : 'በመላክ ላይ...'
+        : lang === 'en' ? 'Submit Registration' : 'ምዝገባውን አጠናቅቅ'}
+    </span>
+    <ArrowRight className="w-4 h-4" />
+  </button>
+</div>
 
             </form>
           </div>
